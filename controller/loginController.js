@@ -44,8 +44,8 @@ export const login = async (req, res) => {
     const refreshToken = jwt.sign({_id: checkRegisteration._id}, process.env.REFRESH_SECRET_KEY, {expiresIn: '2h'});
 
     // sending token to cookie
-    res.cookie("accessToken", accessToken, {httpOnly: true,secure: true, sameSite: "Strict", maxAge: 4 * 60 * 1000});
-    res.cookie("refreshToken", refreshToken, {httpOnly: true, sameSite: "Strict", secure:true, maxAge: 120 * 60 * 1000});
+    res.cookie("accessToken", accessToken, {httpOnly: true,secure: true, sameSite: "none", maxAge: 4 * 60 * 1000});
+    res.cookie("refreshToken", refreshToken, {httpOnly: true, sameSite: "none", secure:true, maxAge: 120 * 60 * 1000});
 
     res.status(200).json({ message: "login ..." });
   } catch (error) {
@@ -69,7 +69,7 @@ export const refreshToken = async(req,res)=>{
     
     const newaccessToken = jwt.sign({_id: user._id}, process.env.ACCESS_SECRET_KEY, {expiresIn: "4m"});
 
-    res.cookie("accessToken", newaccessToken, {httpOnly: true,secure:true, sameSite: "Strict", maxAge: 4 * 60 * 1000});
+    res.cookie("accessToken", newaccessToken, {httpOnly: true,secure:true, sameSite: "none", maxAge: 4 * 60 * 1000});
 
     res.json({message: "Token updated"})
 
