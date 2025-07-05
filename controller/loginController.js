@@ -22,7 +22,7 @@ export const login = async (req, res) => {
       res
         .status(404)
         .json({ message: "User not found, kindly register first & try login" });
-      return;
+        return;
     }
 
     // after checking user exist ~ check its password is also matched with hash
@@ -31,41 +31,21 @@ export const login = async (req, res) => {
       checkRegisteration.password
     );
     console.log("compare password ", comparePasswords);
-    if (!comparePasswords) {
-      res.status(404).json({ message: "provide correct password" });
-      return;
+    if(!comparePasswords){
+        res.status(404).json({message: 'provide correct password'});
+        return;
     }
 
     // user & password exist in db ~ generate JWT cookie
 
     //token1
-    const accessToken = jwt.sign(
-      { _id: checkRegisteration._id, email: checkRegisteration.email },
-      process.env.ACCESS_SECRET_KEY,
-      { expiresIn: "4m" }
-    );
+    const accessToken = jwt.sign({_id: checkRegisteration._id,email: checkRegisteration.email}, process.env.ACCESS_SECRET_KEY,{expiresIn: '4m'});
     //token2
-    const refreshToken = jwt.sign(
-      { _id: checkRegisteration._id },
-      process.env.REFRESH_SECRET_KEY,
-      { expiresIn: "2h" }
-    );
+    const refreshToken = jwt.sign({_id: checkRegisteration._id}, process.env.REFRESH_SECRET_KEY, {expiresIn: '2h'});
 
     // sending token to cookie
-    res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-      partitioned: "production",
-      maxAge: 4 * 60 * 1000,
-    });
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      sameSite: "none",
-      partitioned: "production",
-      secure: true,
-      maxAge: 120 * 60 * 1000,
-    });
+    res.cookie("accessToken", accessToken, {httpOnly: true,secure: true, sameSite: "Strict", maxAge: 4 * 60 * 1000});
+    res.cookie("refreshToken", refreshToken, {httpOnly: true, sameSite: "Strict", secure:true, maxAge: 120 * 60 * 1000});
 
     res.status(200).json({ message: "login ..." });
   } catch (error) {
@@ -74,32 +54,28 @@ export const login = async (req, res) => {
 };
 
 // token reNew
-export const refreshToken = async (req, res) => {
+export const refreshToken = async(req,res)=>{
   const refreshToken = req.cookies.refreshToken;
-  if (!refreshToken) {
+  if(!refreshToken) {
     return res.sendStatus(401);
   }
 
   jwt.verify(refreshToken, process.env.REFRESH_SECRET_KEY, (err, user) => {
-    if (err) return res.sendStatus(403);
+    if(err) return res.sendStatus(403);
 
-    console.log("user value", user);
-    console.log("new user value", req.user);
+    console.log('user value', user);
+    console.log('new user value', req.user);
+    
+    
+    const newaccessToken = jwt.sign({_id: user._id}, process.env.ACCESS_SECRET_KEY, {expiresIn: "4m"});
 
-    const newaccessToken = jwt.sign(
-      { _id: user._id },
-      process.env.ACCESS_SECRET_KEY,
-      { expiresIn: "4m" }
-    );
+    res.cookie("accessToken", newaccessToken, {httpOnly: true,secure:true, sameSite: "Strict", maxAge: 4 * 60 * 1000});
 
-    res.cookie("accessToken", newaccessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-      partitioned: 'production',
-      maxAge: 4 * 60 * 1000,
-    });
+    res.json({message: "Token updated"})
 
-    res.json({ message: "Token updated" });
   });
+
 };
+
+
+
